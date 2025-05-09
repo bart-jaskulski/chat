@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import 'server-only';
 
 import {
@@ -12,8 +13,8 @@ import {
   lt,
   type SQL,
 } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/libsql';
+import * as schema from './schema';
 
 import {
   user,
@@ -37,9 +38,7 @@ import type { VisibilityType } from '@/components/visibility-selector';
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+const db = drizzle(process.env.DATABASE_URL, { schema });
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
@@ -49,6 +48,88 @@ export async function getUser(email: string): Promise<Array<User>> {
     throw error;
   }
 }
+
+async function main() {
+  console.log('Running DB operations demo...\n');
+
+  const testUserEmail = `testuser-${Date.now()}@example.com`;
+  const initialPassword = "password123";
+  let hashedPassword = generateHashedPassword(initialPassword);
+
+  // 1. Create User
+  try {
+    const newUserPayload: typeof schema.user.$inferInsert = {
+      email: testUserEmail,
+      password: hashedPassword,
+    };
+    await db.insert(user).values(newUserPayload);
+    console.log(`User ${testUserEmail} created successfully!`);
+  } catch (error) {
+    console.error('Error creating user:', error);
+    return; // Exit if creation fails
+  }
+
+  // 2. Read Users
+  try {
+    // Get all users
+    const allUsers = await db.select().from(user);
+    console.log('\nAll users:', allUsers);
+
+    // Get the specific user created
+    const [retrievedUser] = await db
+      .select()
+      .from(user)
+      .where(eq(user.email, testUserEmail));
+    if (retrievedUser) {
+      console.log(`\nRetrieved user ${testUserEmail}:`, retrievedUser);
+    } else {
+      console.log(`\nUser ${testUserEmail} not found after creation.`);
+    }
+  } catch (error) {
+    console.error('\nError reading users:', error);
+  }
+
+  // 3. Update User
+  try {
+    const updatedPassword = "newPassword456";
+    hashedPassword = generateHashedPassword(updatedPassword);
+    const updateResult = await db
+      .update(user)
+      .set({ password: hashedPassword })
+      .where(eq(user.email, testUserEmail))
+      .returning();
+    if (updateResult.length > 0) {
+      console.log(`\nUser ${testUserEmail} password updated successfully!`);
+      console.log('Updated user details:', updateResult[0]);
+    } else {
+      console.log(`\nUser ${testUserEmail} not found for update.`);
+    }
+  } catch (error) {
+    console.error('\nError updating user:', error);
+  }
+
+  // 4. Delete User
+  try {
+    const deleteResult = await db
+      .delete(user)
+      .where(eq(user.email, testUserEmail))
+      .returning();
+    if (deleteResult.length > 0) {
+      console.log(`\nUser ${testUserEmail} deleted successfully!`);
+    } else {
+      console.log(`\nUser ${testUserEmail} not found for deletion.`);
+    }
+  } catch (error) {
+    console.error('\nError deleting user:', error);
+  }
+
+  console.log('\nDB operations demo finished.');
+}
+
+main().catch((err) => {
+  console.error('Critical error in main execution:', err);
+  process.exit(1);
+});
 
 export async function createUser(email: string, password: string) {
   const hashedPassword = generateHashedPassword(password);
