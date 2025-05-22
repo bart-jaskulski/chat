@@ -38,7 +38,7 @@ import type { VisibilityType } from '@/components/visibility-selector';
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-const db = drizzle(process.env.DATABASE_URL, { schema });
+const db = drizzle(process.env.DATABASE_URL || 'file:./chat.db', { schema });
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {

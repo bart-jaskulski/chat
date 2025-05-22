@@ -1,6 +1,6 @@
-import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 import { auth } from '@/app/(auth)/auth';
 
@@ -51,12 +51,34 @@ export async function POST(request: Request) {
     const fileBuffer = await file.arrayBuffer();
 
     try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: 'public',
+      const s3Client = new S3Client({
+        region: process.env.AWS_REGION,
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        },
       });
 
-      return NextResponse.json(data);
+      const putCommand = new PutObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: filename, // Or a more structured path like `uploads/${filename}`
+        Body: Buffer.from(fileBuffer), // Ensure Body is Buffer
+        ContentType: file.type, // Make sure to set ContentType
+        ACL: 'public-read', // If files need to be publicly accessible directly via S3 URL.
+                           // NOTE: For enhanced security in the long term, consider keeping objects private
+                           // and generating pre-signed URLs on demand via a separate backend endpoint.
+                           // This would involve using `@aws-sdk/s3-request-presigner`'s `getSignedUrl`
+                           // with `GetObjectCommand`.
+      });
+
+      await s3Client.send(putCommand);
+
+      // Construct the S3 object URL
+      const s3ObjectUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${filename}`;
+
+      return NextResponse.json({ url: s3ObjectUrl });
     } catch (error) {
+      console.error('S3 Upload Error:', error); // Log the specific error
       return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
     }
   } catch (error) {

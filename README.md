@@ -29,8 +29,8 @@
   - Styling with [Tailwind CSS](https://tailwindcss.com)
   - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
 - Data Persistence
-  - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
-  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
+- SQLite for saving chat history and user data (via `file:./chat.db`)
+- AWS S3 for efficient file storage
 - [Auth.js](https://authjs.dev)
   - Simple and secure authentication
 
@@ -40,23 +40,54 @@ This template ships with [xAI](https://x.ai) `grok-2-1212` as the default chat m
 
 ## Deploy Your Own
 
-You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
+You can deploy this project to any Node.js compatible hosting environment.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot&env=AUTH_SECRET&envDescription=Generate%20a%20random%20secret%20to%20use%20for%20authentication&envLink=https%3A%2F%2Fgenerate-secret.vercel.app%2F32&project-name=my-awesome-chatbot&repository-name=my-awesome-chatbot&demo-title=AI%20Chatbot&demo-description=An%20Open-Source%20AI%20Chatbot%20Template%20Built%20With%20Next.js%20and%20the%20AI%20SDK%20by%20Vercel&demo-url=https%3A%2F%2Fchat.vercel.ai&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22ai%22%2C%22productSlug%22%3A%22grok%22%2C%22integrationSlug%22%3A%22xai%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D)
+**Important Considerations for Deployment:**
+
+*   **SQLite Database:** The application uses a local SQLite file (`chat.db`). Ensure your deployment environment has persistent storage if you want to retain chat history across deployments. For serverless environments, you might need to consider a managed SQLite service or switch to a different database provider.
+*   **AWS S3:** You will need to configure your S3 bucket and AWS credentials in the production environment.
+*   **Environment Variables:** Ensure all necessary environment variables (see `.env.example`) are set up in your deployment environment.
 
 ## Running locally
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+You will need to set up the environment variables [defined in `.env.example`](.env.example) to run the AI Chatbot. Create a `.env` file in the root of the project and populate it with your credentials.
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
+**Key Environment Variables:**
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+*   `AUTH_SECRET`: A random secret for Auth.js.
+*   `XAI_API_KEY`: Your API key for the xAI models.
+*   `DATABASE_URL`: Path to your SQLite database file (e.g., `file:./chat.db`).
+*   `AWS_ACCESS_KEY_ID`: Your AWS Access Key ID for S3.
+*   `AWS_SECRET_ACCESS_KEY`: Your AWS Secret Access Key for S3.
+*   `AWS_REGION`: The AWS region where your S3 bucket is located.
+*   `S3_BUCKET_NAME`: The name of your S3 bucket for file uploads.
 
-```bash
-pnpm install
-pnpm dev
-```
+> Note: You should not commit your `.env` file to version control as it will expose secrets.
+
+**Setup Steps:**
+
+1.  **Install dependencies:**
+    ```bash
+    pnpm install
+    ```
+    _If you encounter issues with `pnpm`, you can try `npm install --legacy-peer-deps`._
+
+2.  **Set up environment variables:**
+    Create a `.env` file by copying `.env.example` and fill in your actual credentials:
+    ```bash
+    cp .env.example .env
+    ```
+    Then edit `.env` with your values.
+
+3.  **Run database migrations:**
+    This will create the necessary tables in your SQLite database.
+    ```bash
+    pnpm db:migrate
+    ```
+
+4.  **Run the development server:**
+    ```bash
+    pnpm dev
+    ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
