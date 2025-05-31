@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { chatModels } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
+import { SearchIcon } from 'lucide-react'; // Import SearchIcon
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
@@ -86,7 +87,12 @@ export function ModelSelector({
                 className="gap-4 group/item flex flex-row justify-between items-center w-full"
               >
                 <div className="flex flex-col gap-1 items-start">
-                  <div>{chatModel.name}</div>
+                  <div className="flex items-center gap-2"> {/* Added flex container for name and icon */}
+                    <span>{chatModel.name}</span>
+                    {chatModel.id === 'gemini-1.5-flash-search' && (
+                      <SearchIcon className="w-3.5 h-3.5 text-muted-foreground" title="Web search enabled" />
+                    )}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     {chatModel.description}
                   </div>

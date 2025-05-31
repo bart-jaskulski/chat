@@ -70,8 +70,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { id, message, selectedChatModel, selectedVisibilityType } =
-      requestBody;
+    const {
+      id,
+      message,
+      selectedChatModel,
+      selectedVisibilityType,
+      isWebSearchEnabled,
+    } = requestBody;
 
     const session = await auth();
 
@@ -141,7 +146,11 @@ export async function POST(request: Request) {
     const stream = createDataStream({
       execute: (dataStream) => {
         const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
+          model:
+            selectedChatModel === 'gemini-1.5-flash-search' &&
+            isWebSearchEnabled
+              ? myProvider.languageModel('gemini-1.5-flash-search')
+              : myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel }),
           messages,
           maxSteps: 5,
@@ -164,6 +173,7 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            url_context: {},
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {

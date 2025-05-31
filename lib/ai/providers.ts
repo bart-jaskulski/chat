@@ -15,6 +15,7 @@ export const myProvider = isTestEnvironment
         'chat-model-reasoning': reasoningModel,
         'title-model': titleModel,
         'artifact-model': artifactModel,
+        'gemini-1.5-flash-search': chatModel, // Using chatModel for test environment
       },
     })
   : customProvider({
@@ -23,6 +24,7 @@ export const myProvider = isTestEnvironment
         'chat-model-reasoning': google('gemini-2.5-pro-exp-03-25'),
         'title-model': google('gemini-2.0-flash'),
         'artifact-model': google('gemini-2.0-flash'),
+        'gemini-1.5-flash-search': google('gemini-1.5-flash', { useSearchGrounding: true }),
       },
       imageModels: {
       },

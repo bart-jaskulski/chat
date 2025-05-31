@@ -19,6 +19,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { Dispatch, SetStateAction } from 'react'; // Import Dispatch and SetStateAction
 
 const PurePreviewMessage = ({
   chatId,
@@ -29,6 +30,9 @@ const PurePreviewMessage = ({
   reload,
   isReadonly,
   requiresScrollPadding,
+  selectedChatModelId, // Added selectedChatModelId
+  isWebSearchEnabled, // Added isWebSearchEnabled
+  setIsWebSearchEnabled, // Added setIsWebSearchEnabled
 }: {
   chatId: string;
   message: UIMessage;
@@ -38,6 +42,9 @@ const PurePreviewMessage = ({
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
+  selectedChatModelId: string; // Added selectedChatModelId
+  isWebSearchEnabled: boolean; // Added isWebSearchEnabled
+  setIsWebSearchEnabled: Dispatch<SetStateAction<boolean>>; // Added setIsWebSearchEnabled
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -147,6 +154,9 @@ const PurePreviewMessage = ({
                         setMode={setMode}
                         setMessages={setMessages}
                         reload={reload}
+                        selectedChatModelId={selectedChatModelId} // Pass selectedChatModelId
+                        isWebSearchEnabled={isWebSearchEnabled} // Pass isWebSearchEnabled
+                        setIsWebSearchEnabled={setIsWebSearchEnabled} // Pass setIsWebSearchEnabled
                       />
                     </div>
                   );

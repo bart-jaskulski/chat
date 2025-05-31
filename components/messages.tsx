@@ -8,6 +8,8 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import { motion } from 'framer-motion';
 import { useMessages } from '@/hooks/use-messages';
 
+import { Dispatch, SetStateAction } from 'react'; // Import Dispatch and SetStateAction
+
 interface MessagesProps {
   chatId: string;
   status: UseChatHelpers['status'];
@@ -17,6 +19,9 @@ interface MessagesProps {
   reload: UseChatHelpers['reload'];
   isReadonly: boolean;
   isArtifactVisible: boolean;
+  selectedChatModelId: string; // Added selectedChatModelId
+  isWebSearchEnabled: boolean; // Added isWebSearchEnabled
+  setIsWebSearchEnabled: Dispatch<SetStateAction<boolean>>; // Added setIsWebSearchEnabled
 }
 
 function PureMessages({
@@ -27,6 +32,9 @@ function PureMessages({
   setMessages,
   reload,
   isReadonly,
+  selectedChatModelId, // Destructure new prop
+  isWebSearchEnabled, // Destructure new prop
+  setIsWebSearchEnabled, // Destructure new prop
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -60,6 +68,9 @@ function PureMessages({
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
+          selectedChatModelId={selectedChatModelId} // Pass selectedChatModelId
+          isWebSearchEnabled={isWebSearchEnabled} // Pass isWebSearchEnabled
+          setIsWebSearchEnabled={setIsWebSearchEnabled} // Pass setIsWebSearchEnabled
           requiresScrollPadding={
             hasSentMessage && index === messages.length - 1
           }

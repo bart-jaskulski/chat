@@ -2,7 +2,7 @@
 
 import type { Attachment, UIMessage } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'; // Ensure useState is imported
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -39,6 +39,8 @@ export function Chat({
 }) {
   const { mutate } = useSWRConfig();
 
+  const [isWebSearchEnabled, setIsWebSearchEnabled] = useState<boolean>(false); // Add state for web search
+
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType,
@@ -67,6 +69,7 @@ export function Chat({
       message: body.messages.at(-1),
       selectedChatModel: initialChatModel,
       selectedVisibilityType: visibilityType,
+      isWebSearchEnabled, // Include isWebSearchEnabled in API calls
     }),
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
@@ -132,6 +135,9 @@ export function Chat({
           reload={reload}
           isReadonly={isReadonly}
           isArtifactVisible={isArtifactVisible}
+          selectedChatModelId={initialChatModel} // Pass selectedChatModelId
+          isWebSearchEnabled={isWebSearchEnabled} // Pass isWebSearchEnabled
+          setIsWebSearchEnabled={setIsWebSearchEnabled} // Pass setIsWebSearchEnabled
         />
 
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
@@ -149,6 +155,9 @@ export function Chat({
               setMessages={setMessages}
               append={append}
               selectedVisibilityType={visibilityType}
+              selectedChatModelId={initialChatModel} // Pass selectedChatModelId
+              isWebSearchEnabled={isWebSearchEnabled} // Pass isWebSearchEnabled
+              setIsWebSearchEnabled={setIsWebSearchEnabled} // Pass setIsWebSearchEnabled
             />
           )}
         </form>

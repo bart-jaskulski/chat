@@ -17,4 +17,9 @@ export const chatModels: Array<ChatModel> = [
     name: 'Reasoning model',
     description: 'Uses advanced reasoning',
   },
+  {
+    id: 'gemini-1.5-flash-search',
+    name: 'Gemini 1.5 Flash (Web Search)',
+    description: 'Gemini 1.5 Flash with web search capabilities',
+  },
 ];

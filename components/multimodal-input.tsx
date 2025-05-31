@@ -16,9 +16,10 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
+import { ArrowUpIcon, PaperclipIcon, SearchIcon, StopIcon } from './icons'; // Added SearchIcon
 import { PreviewAttachment } from './preview-attachment';
 import { Button } from './ui/button';
+import { cn } from '@/lib/utils'; // Added cn
 import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
@@ -42,6 +43,9 @@ function PureMultimodalInput({
   handleSubmit,
   className,
   selectedVisibilityType,
+  selectedChatModelId, // Added selectedChatModelId
+  isWebSearchEnabled, // Added isWebSearchEnabled
+  setIsWebSearchEnabled, // Added setIsWebSearchEnabled
 }: {
   chatId: string;
   input: UseChatHelpers['input'];
@@ -56,9 +60,14 @@ function PureMultimodalInput({
   handleSubmit: UseChatHelpers['handleSubmit'];
   className?: string;
   selectedVisibilityType: VisibilityType;
+  selectedChatModelId: string; // Added selectedChatModelId
+  isWebSearchEnabled: boolean; // Added isWebSearchEnabled
+  setIsWebSearchEnabled: Dispatch<SetStateAction<boolean>>; // Added setIsWebSearchEnabled
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
+  const isSearchCompatibleModel =
+    selectedChatModelId === 'gemini-1.5-flash-search'; // Determine if model is search compatible
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -291,8 +300,22 @@ function PureMultimodalInput({
         }}
       />
 
-      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
+      <div className="absolute bottom-0 left-0 p-2 w-fit flex flex-row justify-start items-center"> {/* Added items-center */}
         <AttachmentsButton fileInputRef={fileInputRef} status={status} />
+        {isSearchCompatibleModel && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsWebSearchEnabled(!isWebSearchEnabled)}
+            className={cn(
+              'ml-1 rounded-full p-[7px] h-fit dark:border-zinc-700 dark:hover:bg-zinc-900 hover:bg-zinc-200',
+              isWebSearchEnabled ? 'bg-accent text-accent-foreground' : '',
+            )}
+            title="Toggle Web Search"
+          >
+            <SearchIcon size={14} />
+          </Button>
+        )}
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">

@@ -1,9 +1,11 @@
 'use client';
 
-import { ChatRequestOptions, Message } from 'ai';
+import { Message } from 'ai';
 import { Button } from './ui/button';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Textarea } from './ui/textarea';
+import { SearchIcon } from 'lucide-react'; // Import SearchIcon
+import { cn } from '@/lib/utils'; // Import cn for conditional class names
 import { deleteTrailingMessages } from '@/app/(chat)/actions';
 import { UseChatHelpers } from '@ai-sdk/react';
 
@@ -12,6 +14,9 @@ export type MessageEditorProps = {
   setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
+  selectedChatModelId: string; // Added selectedChatModelId
+  isWebSearchEnabled: boolean; // Added isWebSearchEnabled
+  setIsWebSearchEnabled: Dispatch<SetStateAction<boolean>>; // Added setIsWebSearchEnabled
 };
 
 export function MessageEditor({
@@ -19,10 +24,15 @@ export function MessageEditor({
   setMode,
   setMessages,
   reload,
+  selectedChatModelId, // Destructure new prop
+  isWebSearchEnabled, // Destructure new prop
+  setIsWebSearchEnabled, // Destructure new prop
 }: MessageEditorProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [draftContent, setDraftContent] = useState<string>(message.content);
+  const isSearchCompatibleModel =
+    selectedChatModelId === 'gemini-1.5-flash-search'; // Determine if model is search compatible
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -53,7 +63,21 @@ export function MessageEditor({
         onChange={handleInput}
       />
 
-      <div className="flex flex-row gap-2 justify-end">
+      <div className="flex flex-row gap-2 justify-end items-center"> {/* Added items-center */}
+        {isSearchCompatibleModel && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsWebSearchEnabled(!isWebSearchEnabled)}
+            className={cn(
+              'h-fit py-2 px-3 rounded-full', // Added rounded-full for better icon button look
+              isWebSearchEnabled ? 'bg-accent text-accent-foreground' : '',
+            )}
+            title="Toggle Web Search"
+          >
+            <SearchIcon className="w-4 h-4" />
+          </Button>
+        )}
         <Button
           variant="outline"
           className="h-fit py-2 px-3"
