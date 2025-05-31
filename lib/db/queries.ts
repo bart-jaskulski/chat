@@ -28,6 +28,8 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  persona as personaSchema, // Renamed to avoid conflict with Persona type
+  type Persona as DBPersona, // Use DBPersona for the type from schema
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -46,6 +48,20 @@ export async function getUser(email: string): Promise<Array<User>> {
   } catch (error) {
     console.error('Failed to get user from database');
     throw error;
+  }
+}
+
+export async function getUserPersonaById(userId: string, personaId: string): Promise<DBPersona | null> {
+  try {
+    const [foundPersona] = await db
+      .select()
+      .from(personaSchema)
+      .where(and(eq(personaSchema.id, personaId), eq(personaSchema.userId, userId)));
+
+    return foundPersona || null;
+  } catch (error) {
+    console.error('Failed to get persona by id for user from database', error);
+    throw error; // Or return null if you want to handle errors more gracefully upstream
   }
 }
 

@@ -25,6 +25,11 @@ export const postRequestBodySchema = z.object({
   }),
   selectedChatModel: z.enum(['chat-model', 'chat-model-reasoning']),
   selectedVisibilityType: z.enum(['public', 'private']),
+  // Persona settings - all optional
+  personaId: z.string().uuid().optional(),
+  personaSystemPrompt: z.string().max(4000).optional(), // Max length assumption
+  personaTemperature: z.number().min(0).max(2).optional(),
+  personaTopP: z.number().min(0).max(1).optional(),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

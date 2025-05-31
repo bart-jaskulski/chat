@@ -6,6 +6,7 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  real,
 } from 'drizzle-orm/sqlite-core';
 import { generateUUID } from '../utils';
 
@@ -16,6 +17,21 @@ export const user = sqliteTable('User', {
 });
 
 export type User = InferSelectModel<typeof user>;
+
+export const persona = sqliteTable('Persona', {
+  id: text('id').primaryKey().$defaultFn(() => generateUUID()),
+  userId: text('userId')
+    .notNull()
+    .references(() => user.id),
+  name: text('name').notNull(),
+  systemPrompt: text('systemPrompt').notNull(),
+  modelId: text('modelId').notNull(),
+  temperature: real('temperature'),
+  topP: real('topP'),
+  createdAt: integer('createdAt', { mode: 'timestamp_ms' }).notNull(),
+});
+
+export type Persona = InferSelectModel<typeof persona>;
 
 export const chat = sqliteTable('Chat', {
   id: text('id').primaryKey().$defaultFn(() => generateUUID()),

@@ -24,6 +24,7 @@ export function Chat({
   id,
   initialMessages,
   initialChatModel,
+  initialPersonaSettings, // New prop
   initialVisibilityType,
   isReadonly,
   session,
@@ -32,6 +33,14 @@ export function Chat({
   id: string;
   initialMessages: Array<UIMessage>;
   initialChatModel: string;
+  initialPersonaSettings?: { // Made optional as per instructions
+    id: string; // Persona's own ID
+    name: string;
+    systemPrompt: string;
+    modelId: string; // Base model ID
+    temperature?: number;
+    topP?: number;
+  } | null; // Allow null as per instructions
   initialVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: Session;
@@ -62,12 +71,26 @@ export function Chat({
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
-    experimental_prepareRequestBody: (body) => ({
-      id,
-      message: body.messages.at(-1),
-      selectedChatModel: initialChatModel,
-      selectedVisibilityType: visibilityType,
-    }),
+    experimental_prepareRequestBody: (body) => {
+      const requestBody: any = {
+        id,
+        message: body.messages.at(-1),
+        selectedChatModel: initialChatModel, // This is the base model if persona is used
+        selectedVisibilityType: visibilityType,
+      };
+      if (initialPersonaSettings) {
+        requestBody.personaSystemPrompt = initialPersonaSettings.systemPrompt;
+        if (initialPersonaSettings.temperature !== undefined) {
+          requestBody.personaTemperature = initialPersonaSettings.temperature;
+        }
+        if (initialPersonaSettings.topP !== undefined) {
+          requestBody.personaTopP = initialPersonaSettings.topP;
+        }
+        // Pass personaId as well, might be useful for logging or specific backend logic
+        requestBody.personaId = initialPersonaSettings.id;
+      }
+      return requestBody;
+    },
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
@@ -117,7 +140,9 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
-          selectedModelId={initialChatModel}
+          // selectedModelId will display the base model name or persona name via ModelSelector's logic
+          // The actual model used for API calls is initialChatModel (base model)
+          selectedModelId={initialPersonaSettings ? `persona_${initialPersonaSettings.id}` : initialChatModel}
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
           session={session}

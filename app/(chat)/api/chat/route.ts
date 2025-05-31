@@ -70,8 +70,16 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { id, message, selectedChatModel, selectedVisibilityType } =
-      requestBody;
+    const {
+      id,
+      message,
+      selectedChatModel,
+      selectedVisibilityType,
+      personaId, // New field from schema
+      personaSystemPrompt, // New field from schema
+      personaTemperature, // New field from schema
+      personaTopP // New field from schema
+    } = requestBody;
 
     const session = await auth();
 
@@ -140,11 +148,27 @@ export async function POST(request: Request) {
 
     const stream = createDataStream({
       execute: (dataStream) => {
+        // Determine the system prompt to use
+        const activeSystemPrompt =
+          personaSystemPrompt && personaSystemPrompt.trim() !== ''
+            ? personaSystemPrompt
+            : systemPrompt({ selectedChatModel });
+
+        // Prepare model options, including persona settings if available
+        const modelOptions: any = {
+          temperature: personaTemperature, // Will be undefined if not provided, SDK should use default
+          topP: personaTopP, // Will be undefined if not provided, SDK should use default
+        };
+
+        // Filter out undefined options so SDK defaults apply
+        Object.keys(modelOptions).forEach(key => modelOptions[key] === undefined && delete modelOptions[key]);
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel }),
+          system: activeSystemPrompt,
           messages,
           maxSteps: 5,
+          ...modelOptions, // Spread the conditional temperature and topP
           experimental_activeTools:
             selectedChatModel === 'chat-model-reasoning'
               ? []
