@@ -57,10 +57,24 @@ You will need to set up the environment variables [defined in `.env.example`](.e
 *   `AUTH_SECRET`: A random secret for Auth.js.
 *   `XAI_API_KEY`: Your API key for the xAI models.
 *   `DATABASE_URL`: Path to your SQLite database file (e.g., `file:./chat.db`).
-*   `AWS_ACCESS_KEY_ID`: Your AWS Access Key ID for S3.
-*   `AWS_SECRET_ACCESS_KEY`: Your AWS Secret Access Key for S3.
-*   `AWS_REGION`: The AWS region where your S3 bucket is located.
-*   `S3_BUCKET_NAME`: The name of your S3 bucket for file uploads.
+*   `AWS_ACCESS_KEY_ID`: Your Access Key ID for AWS S3 or an S3-compatible service.
+*   `AWS_SECRET_ACCESS_KEY`: Your Secret Access Key for AWS S3 or an S3-compatible service.
+*   `AWS_REGION`: The AWS region for your S3 bucket (e.g., `us-east-1`). This may be optional or handled differently by some S3-compatible services when `S3_ENDPOINT_URL` is used, but the AWS SDK often still expects a value.
+*   `S3_BUCKET_NAME`: The name of your S3 bucket.
+*   `S3_ENDPOINT_URL` (Optional): The complete base URL for an S3-compatible storage provider (e.g., `http://localhost:9000` for a local MinIO, `https://your-space.sfo3.digitaloceanspaces.com` for DigitalOcean Spaces). If not set, the AWS SDK defaults to standard AWS S3 endpoints.
+*   `S3_FORCE_PATH_STYLE` (Optional): Set to `true` if your S3-compatible provider requires path-style URLs (e.g., `endpoint/bucket/key`) instead of virtual-hosted style (e.g., `bucket.endpoint/key`). Defaults to `false` if not set (which is typical for AWS S3).
+
+**Using S3-Compatible Services (e.g., MinIO):**
+
+To use a service like MinIO, you would typically configure the following in your `.env` file:
+```
+AWS_ACCESS_KEY_ID=your_minio_access_key
+AWS_SECRET_ACCESS_KEY=your_minio_secret_key
+S3_BUCKET_NAME=your_minio_bucket_name
+S3_ENDPOINT_URL=http://localhost:9000 # Or your MinIO server URL
+S3_FORCE_PATH_STYLE=true # MinIO often uses path-style addressing
+AWS_REGION=us-east-1 # Still required by the SDK, can often be a default value like 'us-east-1'
+```
 
 > Note: You should not commit your `.env` file to version control as it will expose secrets.
 
